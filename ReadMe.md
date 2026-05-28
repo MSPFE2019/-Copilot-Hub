@@ -1,207 +1,269 @@
 # Copilot Hub — SharePoint Site Template
 
-A communication-site template modeled after the [Power Platform adoption hub template](https://learn.microsoft.com/en-us/power-platform/guidance/adoption/sharepoint-site-template), adapted for:
+> A drop-in SharePoint communication-site template for organizations rolling out **Microsoft 365 Copilot**, **Copilot Chat**, **Microsoft 365 Agents**, and **Microsoft Copilot Studio agents** — modeled after the [Power Platform adoption hub template](https://learn.microsoft.com/en-us/power-platform/guidance/adoption/sharepoint-site-template) and adapted for the Copilot product family.
 
-- **Microsoft 365 Copilot Chat**
-- **Microsoft 365 Copilot**
-- **Microsoft 365 Agents** (declarative agents / Agent Builder)
-- **Microsoft Copilot Studio agents**
+[![PnP PowerShell](https://img.shields.io/badge/PnP.PowerShell-2.x-0078D4?logo=powershell&logoColor=white)](https://pnp.github.io/powershell/)
+[![SharePoint Online](https://img.shields.io/badge/SharePoint-Online-038387?logo=microsoftsharepoint&logoColor=white)](https://learn.microsoft.com/en-us/sharepoint/)
+[![Microsoft 365](https://img.shields.io/badge/Microsoft%20365-Copilot-7719AA?logo=microsoft&logoColor=white)](https://learn.microsoft.com/en-us/copilot/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-Training is built into the existing **Guided Learning** page and is backed by a `Learning Paths` list, pre-seeded with **9 verified Microsoft Learn courses**.
+**Two design principles:**
+
+1. **Least privilege by default** — no tenant-wide `Sites.FullControl.All` grant, no Entra app registration, no certificates, no stored secrets. You sign in interactively as a **SharePoint Administrator** for the duration of the deploy, and nothing is granted permanently.
+2. **Config-driven** — every tenant-specific value (company name, site URL, owner) lives in a single `Config.psd1` file. You never edit the XML, and you never pass long parameter lists.
 
 ---
 
-## What's in the box
+## Table of contents
 
-| File | Purpose |
-|---|---|
-| `CopilotHub.PnP.xml`        | PnP provisioning template — pages, lists, site columns, nav |
-| `Deploy-CopilotHub.ps1`     | Creates/connects the site, applies the template, registers as a hub |
-| `Seed-LearningPaths.ps1`    | Adds the 9 Microsoft Learn courses to the `Learning Paths` list |
-| `README.md`                 | This guide |
+- [What you get](#what-you-get)
+- [Site structure](#site-structure)
+- [Training tracks](#training-tracks)
+- [Prerequisites](#prerequisites)
+- [Configure](#configure)
+- [Deploy](#deploy)
+- [How it works](#how-it-works)
+- [Customizing the template](#customizing-the-template)
+- [Updating an existing deployment](#updating-an-existing-deployment)
+- [Troubleshooting](#troubleshooting)
+- [Roadmap](#roadmap)
+- [References](#references)
+- [License](#license)
+
+---
+
+## What you get
+
+```
+CopilotHub/
+├── Config.psd1                 # ← edit this once
+├── CopilotHub.PnP.xml          # PnP provisioning template (pages, lists, nav)
+├── Deploy-CopilotHub.ps1       # Reads Config.psd1, creates site, applies template
+├── Seed-LearningPaths.ps1      # Reads Config.psd1, seeds 9 Microsoft Learn courses
+└── README.github.md
+```
 
 ---
 
 ## Site structure
 
-**Site type:** Communication site (`SITEPAGEPUBLISHING#0`)
+**Type:** Communication site (`SITEPAGEPUBLISHING#0`)
 **Default URL:** `/sites/copilothub`
 
-### Pages (16)
+### Navigation
 
-| Page | Section |
-|---|---|
-| `Accelerate-work-with-Microsoft-365-Copilot.aspx` | Home |
-| `Copilot-Chat.aspx` | Products |
-| `Microsoft-365-Copilot.aspx` | Products |
-| `Microsoft-365-Agents.aspx` | Products |
-| `Copilot-Studio-Agents.aspx` | Products |
-| `Responsible-AI-and-Acceptable-Use.aspx` | Governance |
-| `Data-Security-and-Sensitivity-Labels.aspx` | Governance |
-| `DLP-for-Copilot-and-Agents.aspx` | Governance |
-| `Agent-Lifecycle-and-Approval.aspx` | Governance |
-| `Environments.aspx` | Governance |
-| **`Guided-Learning.aspx`** | **Learn — hosts the training tracks + Learning Paths list view** |
-| `Consultation-and-Office-Hours.aspx` | Learn |
-| `Internal-Communities.aspx` | Learn |
-| `Copilot-at-Company.aspx` | About |
-| `Requesting-a-Copilot-License.aspx` | About |
-| `Support.aspx` | About |
+```
+Home
+├── Products
+│   ├── Copilot Chat
+│   ├── Microsoft 365 Copilot
+│   ├── Microsoft 365 Agents
+│   └── Copilot Studio Agents
+├── Governance
+│   ├── Responsible AI & Acceptable Use
+│   ├── Data Security & Sensitivity Labels
+│   ├── DLP for Copilot & Agents
+│   ├── Agent Lifecycle & Approval
+│   └── Environments
+├── Learn
+│   ├── Guided Learning        ← training tracks live here
+│   ├── Consultation & Office Hours
+│   └── Internal Communities
+├── Copilot at {CompanyName}
+├── Get a License
+└── Support
+```
 
 ### Lists (5)
 
 | List | Purpose |
-|---|---|
-| **Learning Paths** | Microsoft Learn courses (Product, Audience, Requirement, Duration, Level, URL) |
-| Agent Catalog       | Registered agents + approval state |
-| Approved Connectors | Connectors approved under DLP |
-| Prompt Library      | Vetted, shareable prompts |
-| Events              | Office hours and training sessions |
+| --- | --- |
+| **Learning Paths** | Microsoft Learn courses (Product / Audience / Requirement / Duration / Level / URL) |
+| Agent Catalog | Registered declarative, Agent Builder, and Copilot Studio agents |
+| Approved Connectors | Connectors approved under DLP for use by agents |
+| Prompt Library | Vetted, shareable prompts |
+| Events | Office hours, training sessions, community events |
 
-### Training tracks (Guided Learning page)
+### Site columns (9)
 
-| Track | Audience | Courses |
-|---|---|---|
-| 1 | End users | Copilot Chat (Basic), Get started with M365 Copilot |
-| 2 | Makers    | Copilot Studio learning path, Declarative agents docs, Agent Builder docs |
-| 3 | Admins    | Prepare your org, Security & compliance, Implement M365 Copilot, MS-4017 |
-| 4 | Hub       | Microsoft Copilot learning hub |
+`CopilotProduct`, `CopilotAudience`, `CopilotRequirement`, `CopilotDurationMinutes`, `CopilotLevel`, `CopilotLearnUrl`, `CopilotOwner`, `CopilotConnector`, `CopilotApprovalState` — all grouped under **Copilot Hub** in the site column gallery.
 
-All URLs are verified against `learn.microsoft.com`.
+---
+
+## Training tracks
+
+The **Guided Learning** page hosts four role-based tracks. Every URL is a verified Microsoft Learn resource.
+
+### Track 1 — End users
+
+| Course | Length | Level |
+| --- | --- | --- |
+| [Transform ideas into action with Copilot Chat (Basic)](https://learn.microsoft.com/en-us/training/paths/explore-microsoft-365-copilot-business-chat/) | 1h 23m · 3 modules | Beginner |
+| [Get started with Microsoft 365 Copilot](https://learn.microsoft.com/en-us/training/paths/get-started-with-microsoft-365-copilot/) | 1h 31m · 3 modules | Beginner |
+
+### Track 2 — Makers
+
+| Course | Length | Level |
+| --- | --- | --- |
+| [Create agents in Microsoft Copilot Studio](https://learn.microsoft.com/en-us/training/paths/create-extend-custom-copilots-microsoft-copilot-studio/) | 4h 5m · 5 modules | Intermediate |
+| [Declarative agents for Microsoft 365 Copilot (overview)](https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/overview-declarative-agent) | Docs | Intermediate |
+| [Agent Builder in Microsoft 365 Copilot](https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/agent-builder) | Docs | Beginner |
+
+### Track 3 — Admins / IT Pros
+
+| Course | Length | Level |
+| --- | --- | --- |
+| [Prepare your organization for Microsoft 365 Copilot](https://learn.microsoft.com/en-us/training/paths/prepare-your-organization-microsoft-365-copilot/) | 1h 20m · 2 modules | Intermediate |
+| [Prepare security and compliance to support Microsoft 365 Copilot](https://learn.microsoft.com/en-us/training/paths/prepare-security-compliance-support-microsoft-365-copilot/) | 6h 27m · 7 modules | Intermediate |
+| [Implement Microsoft 365 Copilot](https://learn.microsoft.com/en-us/training/modules/implement-microsoft-365-copilot/) | 51 min · 10 units | Intermediate |
+| [MS-4017: Manage and extend Microsoft 365 Copilot](https://learn.microsoft.com/en-us/training/courses/ms-4017) | 1 day (ILT) | Intermediate |
+
+### Track 4 — Always-on hub
+
+- [Microsoft Copilot learning hub](https://learn.microsoft.com/en-us/copilot/)
+- [Microsoft 365 Copilot adoption resources](https://learn.microsoft.com/en-us/microsoft-365/copilot/microsoft-365-copilot-enablement-resources)
 
 ---
 
 ## Prerequisites
 
-### 1. PowerShell modules
+### PowerShell
 
 ```powershell
 Install-Module PnP.PowerShell -Scope CurrentUser
 ```
 
-Requires **PnP.PowerShell 2.x** or later on **PowerShell 7.2+**.
+Requires **PnP.PowerShell 2.x** on **PowerShell 7.2+**.
 
-### 2. Permissions on the SPO tenant
+### People
 
-You must run the deployment as either:
+| Role | What they do | When |
+| --- | --- | --- |
+| **SharePoint Administrator** (or Global Admin) | Runs the deployment interactively | Each deploy run |
+| **Site owner** | The UPN listed in `Config.psd1` as `Owner` | At site creation |
 
-- A **SharePoint Administrator** (or Global Admin), **OR**
-- An **Entra app** with `Sites.FullControl.All` (application permission, admin-consented)
+You do **not** need to register an Entra app, generate a certificate, or grant `Sites.FullControl.All` to use this template. Authorization comes from your SharePoint Admin role in the browser sign-in, and lasts only for the session.
 
-Certificate-based app auth is recommended for repeatable deployments and CI/CD.
+---
 
-### 3. Entra app registration (one-time)
+## Configure
+
+Open `Config.psd1` and fill in your tenant values:
 
 ```powershell
-# In an interactive PowerShell session, signed in as a Global Admin:
-Register-PnPEntraIDAppForInteractiveLogin `
-    -ApplicationName "PnP-CopilotHub-Deploy" `
-    -Tenant          "contoso.onmicrosoft.com" `
-    -SharePointApplicationPermissions "Sites.FullControl.All" `
-    -CertificatePath ".\PnP-Cert.pfx"
+@{
+    TenantUrl     = "https://contoso.sharepoint.com"
+    SiteUrl       = "https://contoso.sharepoint.com/sites/copilothub"
+    SiteTitle     = "Copilot Hub"
+    CompanyName   = "Contoso"
+    Owner         = "admin@contoso.onmicrosoft.com"
+    RegisterAsHub = $true
+}
 ```
 
-This:
-
-1. Registers the app in Entra ID
-2. Generates a self-signed certificate (`PnP-Cert.pfx` + `.cer`)
-3. Uploads the public key to the app
-4. Grants `Sites.FullControl.All` and prompts for admin consent
-
-**Save the `ClientId` printed at the end** — you'll pass it to the deployment script.
-
-> Alternative: if you can't grant `Sites.FullControl.All`, use **interactive** auth instead. Replace the `-Client/-Tenant/-Cert*` parameters in both scripts with `-Interactive`, and run as a SharePoint Admin.
-
-### 4. Files in one folder
-
-Put all three files in the same folder:
-
-```
-.\CopilotHub\
-    CopilotHub.PnP.xml
-    Deploy-CopilotHub.ps1
-    Seed-LearningPaths.ps1
-    PnP-Cert.pfx
-```
+Both `Deploy-CopilotHub.ps1` and `Seed-LearningPaths.ps1` read from this file. There are no other tenant-specific values anywhere in the repo, and the XML template is never edited.
 
 ---
 
 ## Deploy
 
 ```powershell
-# Open PowerShell 7 in the CopilotHub folder
-$certPwd = Read-Host -AsSecureString "Certificate password"
-
-.\Deploy-CopilotHub.ps1 `
-    -TenantUrl   "https://contoso.sharepoint.com" `
-    -SiteUrl     "https://contoso.sharepoint.com/sites/copilothub" `
-    -SiteTitle   "Copilot Hub" `
-    -CompanyName "Contoso" `
-    -Owner       "admin@contoso.onmicrosoft.com" `
-    -ClientId    "<your-client-id>" `
-    -Tenant      "contoso.onmicrosoft.com" `
-    -CertificatePath     ".\PnP-Cert.pfx" `
-    -CertificatePassword $certPwd `
-    -RegisterAsHub
+# 1. Edit Config.psd1
+# 2. Run:
+.\Deploy-CopilotHub.ps1
 ```
 
-### What it does, in order
+A browser window opens. **Sign in as a SharePoint Administrator** (or Global Admin). Your role authorizes the deployment for the duration of the session — nothing is granted permanently, and no app registration is created.
 
-1. **Verifies PnP.PowerShell** is installed
-2. **Connects to `-admin.sharepoint.com`** to check whether the site exists
-3. **Creates** the communication site if it doesn't exist (skips if it does)
-4. **Connects to the site** and **applies `CopilotHub.PnP.xml`** — this provisions all 16 pages, 5 lists, 9 site columns, and the global navigation
-5. **Runs `Seed-LearningPaths.ps1`** to insert the 9 Microsoft Learn courses (skips rows that already exist — idempotent)
-6. **Registers the site as a SharePoint hub** if `-RegisterAsHub` is set
-
-Re-running the script is safe — `Invoke-PnPSiteTemplate` is idempotent and the seed script skips existing rows.
+The script is fully idempotent. Re-run it any time to push template changes; existing list data is preserved.
 
 ---
 
-## Customize before you ship
+## How it works
 
-Open `CopilotHub.PnP.xml` and edit:
+`Deploy-CopilotHub.ps1` runs these phases in order:
+
+| # | Phase | What it does |
+| --- | --- | --- |
+| 1 | Module check | Verifies PnP.PowerShell is installed |
+| 2 | Connect to `-admin` endpoint | Interactive browser sign-in as SharePoint Admin |
+| 3 | Ensure site exists | Creates the communication site if missing |
+| 4 | Apply `CopilotHub.PnP.xml` | Substitutes `{parameter:CompanyName}` from `Config.psd1`; provisions columns, lists, pages, navigation |
+| 5 | Seed `Learning Paths` list | Adds 9 Microsoft Learn courses (idempotent on Title) |
+| 6 | Register as hub site | Only if `RegisterAsHub = $true` |
+
+Every phase is idempotent. Safe to re-run.
+
+---
+
+## Customizing the template
+
+### Branding & copy
+
+Edit `CopilotHub.PnP.xml`:
 
 | What | Where |
-|---|---|
-| Default `CompanyName` value | `<pnp:Parameters>` near the bottom |
-| Page body copy              | `<pnp:CanvasControlProperty Key="Text" ... >` inside each `<pnp:ClientSidePage>` |
-| Navigation nodes            | `<pnp:StructuralNavigation>` block |
-| Lists / columns             | `<pnp:Lists>` and `<pnp:SiteFields>` blocks |
+| --- | --- |
+| Page body copy | `<pnp:CanvasControlProperty Key="Text" ... >` inside each `<pnp:ClientSidePage>` |
+| Navigation nodes | `<pnp:StructuralNavigation>` block |
+| Lists / columns | `<pnp:Lists>` and `<pnp:SiteFields>` blocks |
 
-Open `Seed-LearningPaths.ps1` and edit the `$courses` array to add internal training (LinkedIn Learning, Viva Learning, in-house Teams Live Events, etc.).
+> You do NOT need to edit `<pnp:Parameters>` for `CompanyName` — it comes from `Config.psd1` at deploy time.
+
+### Add internal training rows
+
+Append to `$courses` in `Seed-LearningPaths.ps1`:
+
+```powershell
+@{
+    Title       = "Contoso Copilot Onboarding (instructor-led)"
+    Product     = "Microsoft 365 Copilot"
+    Audience    = "End User"
+    Requirement = "Required"
+    Duration    = 60
+    Level       = "Beginner"
+    Url         = "https://contoso.sharepoint.com/sites/copilothub/SitePages/Onboarding.aspx"
+}
+```
+
+Re-run — it skips existing titles.
 
 ---
 
-## Update later
-
-To push template changes to a deployed site, just re-run:
+## Updating an existing deployment
 
 ```powershell
-.\Deploy-CopilotHub.ps1 -SiteUrl ... -CompanyName ... -ClientId ... <etc.>
+# Push template changes (pages, columns, lists, nav)
+.\Deploy-CopilotHub.ps1
+
+# Refresh just the Learning Paths list
+.\Seed-LearningPaths.ps1
 ```
 
-`Invoke-PnPSiteTemplate` will reconcile pages, lists, fields, and nav. Existing list data is preserved.
-
-To add or change Learning Paths rows, edit `$courses` and re-run:
-
-```powershell
-.\Seed-LearningPaths.ps1 -SiteUrl ... -ClientId ... <etc.>
-```
+`Invoke-PnPSiteTemplate` reconciles pages, lists, fields, and navigation. Existing list data is preserved.
 
 ---
 
 ## Troubleshooting
 
 | Symptom | Fix |
-|---|---|
+| --- | --- |
 | `PnP.PowerShell is not installed` | `Install-Module PnP.PowerShell -Scope CurrentUser` |
-| `AccessDenied` during `New-PnPSite` | App needs `Sites.FullControl.All` (admin-consented), OR run interactively as a SharePoint Admin |
-| `Get-PnPTenantSite` fails with 403 | You're not connected to the `-admin` endpoint — the script handles this, but if connecting manually use `https://<tenant>-admin.sharepoint.com` |
-| `Invoke-PnPSiteTemplate` warns about a missing list | Re-run the script — list provisioning sometimes lags behind page provisioning on the first apply |
-| `List 'Learning Paths' not found` | Apply the template first, then run the seed script |
-| Hub registration fails | You need `SharePoint Administrator` or `Global Administrator` for `Register-PnPHubSite` |
-| Pages show `{parameter:CompanyName}` literally | You missed the `-CompanyName` parameter on `Deploy-CopilotHub.ps1` |
+| `Config.psd1 is missing required value: X` | Open `Config.psd1` and fill in the missing value |
+| Browser prompt loops on sign-in | Make sure your account holds the **SharePoint Administrator** role |
+| `Get-PnPTenantSite` returns 403 | You're not signed in as a SharePoint Admin — re-run and sign in with the correct account |
+| `List 'Learning Paths' not found` | Run `Deploy-CopilotHub.ps1` before the seed script |
+| Pages show `{parameter:CompanyName}` literally | `CompanyName` is blank in `Config.psd1` |
+| `Register-PnPHubSite` fails | Confirm `RegisterAsHub = $true` and that your account is a SharePoint Admin |
+
+---
+
+## Roadmap
+
+- [ ] Power Automate flow: auto-assign required training when a Copilot license is requested
+- [ ] Power BI report on training completion rates
+- [ ] Sample declarative agent definition + Copilot Studio solution under `/samples`
+- [ ] Localized content packs (es-ES, fr-FR, de-DE)
 
 ---
 
@@ -209,5 +271,11 @@ To add or change Learning Paths rows, edit `$courses` and re-run:
 
 - [PnP PowerShell docs](https://pnp.github.io/powershell/)
 - [PnP provisioning schema](https://github.com/pnp/PnP-Provisioning-Schema)
-- [Power Platform site template (model for this one)](https://learn.microsoft.com/en-us/power-platform/guidance/adoption/sharepoint-site-template)
+- [Power Platform site template (origin model)](https://learn.microsoft.com/en-us/power-platform/guidance/adoption/sharepoint-site-template)
 - [Microsoft Copilot learning hub](https://learn.microsoft.com/en-us/copilot/)
+
+---
+
+## License
+
+[MIT](LICENSE) — provided as-is. Microsoft, M365 Copilot, Copilot Studio, and SharePoint are trademarks of the Microsoft group of companies.
