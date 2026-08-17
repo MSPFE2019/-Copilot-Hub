@@ -5,7 +5,7 @@
 [![PnP PowerShell](https://img.shields.io/badge/PnP.PowerShell-2.x-0078D4?logo=powershell&logoColor=white)](https://pnp.github.io/powershell/)
 [![SharePoint Online](https://img.shields.io/badge/SharePoint-Online-038387?logo=microsoftsharepoint&logoColor=white)](https://learn.microsoft.com/en-us/sharepoint/)
 [![Microsoft 365](https://img.shields.io/badge/Microsoft%20365-Copilot-7719AA?logo=microsoft&logoColor=white)](https://learn.microsoft.com/en-us/copilot/)
-> **Distribution note:** The repository currently distributes the implementation as `CopilotHub-v3.zip`. Clone or download the repository, extract that archive, and run the scripts from the extracted package directory. The README alone is not a deployable copy of the template.
+> **Distribution note:** The repository currently distributes the implementation as `CopilotHub-v4.zip` through the `v4.0.0` release. Clone or download the repository, extract that archive, and run the scripts from the extracted package directory. The README alone is not a deployable copy of the template.
 
 **Two design principles:**
 
@@ -16,11 +16,13 @@
 
 > **Why an Entra app at all?** As of September 2024, Microsoft retired the shared "PnP Management Shell" multi-tenant app. PnP PowerShell now requires each tenant to register its own app — even for interactive sign-in. The registration is one-time and uses delegated permissions only.
 
+> **Release 4.0.0 hardening:** The provisioning package contains no notification webhook. Designer access, declarative workflow creation, and member sharing are disabled by default; enable them only after tenant governance review. Review all sample pages and events before publishing.
+
 ---
 
 ## Package contents and integrity
 
-After extracting `CopilotHub-v3.zip`, the package should contain the files described below. If a required file is missing, do not run the deployment; download the package again and verify its checksum.
+After extracting `CopilotHub-v4.zip`, the package should contain the files described below. If a required file is missing, do not run the deployment; download the package again and verify its checksum.
 
 ```text
 CopilotHub/
@@ -36,7 +38,13 @@ CopilotHub/
 Before extracting or running administrative scripts, calculate the archive hash and compare it with the SHA-256 value published with the corresponding release or deployment announcement:
 
 ```powershell
-Get-FileHash .\CopilotHub-v3.zip -Algorithm SHA256
+Get-FileHash .\CopilotHub-v4.zip -Algorithm SHA256
+```
+
+For release `v4.0.0`, the expected SHA-256 value is:
+
+```text
+A86EDA7FBC51A3D7A54F1EAFDC299552636922474520197DB5B309EA918A35DE
 ```
 
 Only use a release or commit from the supported repository history. Do not substitute an archive copied from an untrusted location.
