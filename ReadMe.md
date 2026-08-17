@@ -5,7 +5,7 @@
 [![PnP PowerShell](https://img.shields.io/badge/PnP.PowerShell-2.x-0078D4?logo=powershell&logoColor=white)](https://pnp.github.io/powershell/)
 [![SharePoint Online](https://img.shields.io/badge/SharePoint-Online-038387?logo=microsoftsharepoint&logoColor=white)](https://learn.microsoft.com/en-us/sharepoint/)
 [![Microsoft 365](https://img.shields.io/badge/Microsoft%20365-Copilot-7719AA?logo=microsoft&logoColor=white)](https://learn.microsoft.com/en-us/copilot/)
-> **Distribution note:** The repository currently distributes the implementation as `CopilotHub-v4.zip` through the `v4.0.0` release. Clone or download the repository, extract that archive, and run the scripts from the extracted package directory. The README alone is not a deployable copy of the template.
+> **Distribution note:** The supported release artifact is `release/CopilotHub-v4.zip`. The root `CopilotHub-v3.zip` is a separate, inconsistently named local artifact whose embedded `VERSION.txt` says `4.0.0`; do not treat its filename as a v3 release or substitute it for the v4 release. Extract the supported release archive and run the scripts from the extracted package directory. The README alone is not a deployable copy of the template.
 
 **Two design principles:**
 
@@ -22,7 +22,7 @@
 
 ## Package contents and integrity
 
-After extracting `CopilotHub-v4.zip`, the package should contain the files described below. If a required file is missing, do not run the deployment; download the package again and verify its checksum.
+After extracting the supported `release/CopilotHub-v4.zip`, the package should contain the files described below. If a required file is missing, do not run the deployment; download the package again and verify its checksum.
 
 ```text
 CopilotHub/
@@ -41,13 +41,15 @@ Before extracting or running administrative scripts, calculate the archive hash 
 Get-FileHash .\CopilotHub-v4.zip -Algorithm SHA256
 ```
 
-For release `v4.0.0`, the expected SHA-256 value is:
+For the supported `release/CopilotHub-v4.zip` artifact (`v4.0.0`), the verified SHA-256 value is:
 
 ```text
 A86EDA7FBC51A3D7A54F1EAFDC299552636922474520197DB5B309EA918A35DE
 ```
 
 Only use a release or commit from the supported repository history. Do not substitute an archive copied from an untrusted location.
+
+The root `CopilotHub-v3.zip` currently hashes to `6765CE62A8B264148DBA8F7A5267A7280804E4BE1C4B61A20017ED066358AD8D` while carrying `VERSION.txt` value `4.0.0`. Because that artifact is mislabeled/inconsistent, do not use it as the v4 release.
 
 ---
 
@@ -404,7 +406,7 @@ Re-run — it skips existing titles.
 | `AADSTS65001: The user or administrator has not consented to use the application` | Open the app in Entra portal → API permissions → click **Grant admin consent for *(tenant)*** |
 | Browser prompt loops on sign-in | Make sure your account holds the **SharePoint Administrator** role |
 | `Get-PnPTenantSite` returns 403 | You're not signed in as a SharePoint Admin — re-run and sign in with the correct account |
-| `New-PnPSite : {"RawSiteProvisionState":1,"SiteId":"","SiteStatus":3,"SiteUrl":""}` | A previous create attempt left state behind, OR the `Owner` UPN isn't valid in your tenant. The current `Deploy-CopilotHub.ps1` auto-detects deleted/errored sites and verifies the owner UPN before retrying — re-pull the latest script. If you still hit it, open the SharePoint admin center → **Active sites** AND **Deleted sites** and check whether `/sites/copilothub` already exists; remove it manually, wait ~1 minute, then re-run |
+| `New-PnPSite : {"RawSiteProvisionState":1,"SiteId":"","SiteStatus":3,"SiteUrl":""}` | A previous create attempt left state behind, OR the `Owner` UPN isn't valid in your tenant. The current `Deploy-CopilotHub.ps1` auto-detects deleted/errored sites and verifies the owner UPN before retrying — re-pull the latest script. If you still hit it, inspect the SharePoint admin center → **Active sites** and **Deleted sites**. Do not delete or permanently remove a site/data as a troubleshooting shortcut; obtain an approved recovery/cleanup plan first. |
 | Site creation: "Owner UPN ... could not be resolved" | `Owner` in `Config.psd1` is a placeholder (`admin@contoso.onmicrosoft.com`) or a user that doesn't exist in your tenant. Set it to a real licensed UPN (often your own) |
 | `List 'Learning Paths' not found` | Run `Deploy-CopilotHub.ps1` before the seed script |
 | Pages show `{parameter:CompanyName}` literally | `CompanyName` is blank in `Config.psd1` |
@@ -435,4 +437,4 @@ Re-run — it skips existing titles.
 
 ## License
 
-No `LICENSE` file is currently included in this repository. Until a license is added, treat the contents as all rights reserved and obtain permission before redistributing or modifying the package. Microsoft, Microsoft 365 Copilot, Copilot Studio, and SharePoint are trademarks of the Microsoft group of companies.
+No `LICENSE` file is present at this repository root. Until a repository license is added, treat repository contents as all rights reserved and obtain permission before redistributing or modifying them. The extracted release package may contain its own license file; that does not automatically license the repository, local artifacts, or separately copied assets. Microsoft, Microsoft 365 Copilot, Copilot Studio, and SharePoint are trademarks of the Microsoft group of companies.
