@@ -28,7 +28,7 @@ CopilotHub/
 ├── Register-PnPApp.ps1
 ├── Deploy-CopilotHub.ps1
 ├── Seed-LearningPaths.ps1
-├── CopilotHub.pnp
+├── template.pnp
 ├── assets/
 └── ReadMe.md
 ```
@@ -70,7 +70,7 @@ CopilotHub/
 ├── Register-PnPApp.ps1         # One-time: registers an Entra app for PnP sign-in
 ├── Deploy-CopilotHub.ps1       # Hybrid deploy: site + columns + lists (native) + pages/nav/Events (template)
 ├── Seed-LearningPaths.ps1      # Reads Config.psd1, seeds 9 Microsoft Learn courses
-├── CopilotHub.pnp              # PnP provisioning template — 25 rich pages, Events list, nav, 23 stock photos
+├── template.pnp               # PnP provisioning template — 25 rich pages, Events list, nav, 23 stock photos
 ├── assets/                     # Branded PNGs uploaded to /SiteAssets/CopilotHub/ at deploy time
 │   ├── site-logo.png           #   96×96 — official M365 Copilot ribbon glyph
 │   ├── welcome-banner.png      #   1345×436 — hero on the home page
@@ -139,7 +139,7 @@ Hidden under `/SitePages/Templates/`. Use as starting points when posting commun
 | Agent Catalog | Registered declarative, Agent Builder, and Copilot Studio agents | Native cmdlets |
 | Approved Connectors | Connectors approved under DLP for use by agents | Native cmdlets |
 | Prompt Library | Vetted, shareable prompts | Native cmdlets |
-| Events | Office hours, training sessions, community events | `CopilotHub.pnp` template |
+| Events | Office hours, training sessions, community events | `template.pnp` template |
 
 ### Site columns (9)
 
@@ -234,7 +234,7 @@ Run the following from the directory containing `CopilotHub-v3.zip`:
 ```powershell
 Expand-Archive .\CopilotHub-v3.zip -DestinationPath .\CopilotHub -Force
 Set-Location .\CopilotHub
-Get-ChildItem .\Config.psd1, .\Register-PnPApp.ps1, .\Deploy-CopilotHub.ps1, .\Seed-LearningPaths.ps1, .\CopilotHub.pnp
+Get-ChildItem .\Config.psd1, .\Register-PnPApp.ps1, .\Deploy-CopilotHub.ps1, .\Seed-LearningPaths.ps1, .\template.pnp
 ```
 
 The final command must list every required file. Stop and obtain a complete, trusted package if any file is missing.
@@ -302,7 +302,7 @@ The script is fully idempotent. Re-run it any time to push template changes; exi
 | 2b | Register as hub site | cmdlet | Only if `RegisterAsHub = $true` (runs in admin context so no extra login) |
 | 3 | Ensure site exists | cmdlet | Creates the communication site if missing |
 | 4 | Connect to site | cmdlet | Reconnects to the new site URL |
-| 5 | Apply PnP template | `Invoke-PnPSiteTemplate` | Provisions 25 rich pages (News carousel, Events, QuickLinks, People, hero layouts), the Events list with its calendar view, and top navigation — from `CopilotHub.pnp` |
+| 5 | Apply PnP template | `Invoke-PnPSiteTemplate` | Provisions 25 rich pages (News carousel, Events, QuickLinks, People, hero layouts), the Events list with its calendar view, and top navigation — from `template.pnp` |
 | 6 | Site columns | cmdlet | Creates 9 Copilot Hub site columns via `Add-PnPField` |
 | 7 | Lists | cmdlet | Creates 4 lists (Learning Paths, Agent Catalog, Approved Connectors, Prompt Library) via `New-PnPList` and wires field refs — Events list is handled by phase 5 |
 | 8 | Views | cmdlet | Creates `By Audience`, `By Product`, `Required Only` views on Learning Paths |
@@ -319,8 +319,8 @@ Every phase is idempotent. Safe to re-run — existing columns, lists, pages, an
 
 ### Branding & copy
 
-**Pages and navigation** live inside `CopilotHub.pnp`. To modify them you'll need to:
-1. Unzip `CopilotHub.pnp` (it's a standard zip archive — rename to `.zip` if needed).
+**Pages and navigation** live inside `template.pnp`. To modify them you'll need to:
+1. Unzip `template.pnp` (it's a standard zip archive — rename to `.zip` if needed).
 2. Edit the main provisioning XML (named by GUID — check `ProvisioningTemplate/files-map.xml` to find `template.xml`).
 3. Re-zip with the same internal structure and rename back to `.pnp`.
 
@@ -347,7 +347,7 @@ To replace them, drop new PNGs of the same name into `assets/` and re-run `Deplo
 | `icon-m365-agents.png` | 600×600 | Product card |
 | `icon-copilot-studio.png` | 600×600 | Product card |
 
-Deploy uploads everything in `assets/` to `/SiteAssets/CopilotHub/` and the `.pnp` template references them by site-relative path — so they work on every tenant URL without edits. The 23 stock photo backgrounds (hero and section images) come bundled inside `CopilotHub.pnp` itself and are uploaded to `/SiteAssets/Images/` automatically.
+Deploy uploads everything in `assets/` to `/SiteAssets/CopilotHub/` and the `.pnp` template references them by site-relative path — so they work on every tenant URL without edits. The 23 stock photo backgrounds (hero and section images) come bundled inside `template.pnp` itself and are uploaded to `/SiteAssets/Images/` automatically.
 
 ### Add internal training rows
 
@@ -389,7 +389,7 @@ Re-run — it skips existing titles.
 | --- | --- |
 | `PnP.PowerShell is not installed` | `Install-Module PnP.PowerShell -Scope CurrentUser` |
 | `Config.psd1 is missing required value: X` | Open `Config.psd1` and fill in the missing value |
-| `CopilotHub.pnp not found` | Extract the complete package and ensure `CopilotHub.pnp` is in the same folder as `Deploy-CopilotHub.ps1` |
+| `template.pnp not found` | Extract the complete package and ensure `template.pnp` is in the same folder as `Deploy-CopilotHub.ps1` |
 | `AADSTS700016: Application with identifier ... was not found` | You haven't done the one-time app registration yet, or `ClientId` in `Config.psd1` is wrong / from a different tenant |
 | `Register-PnPEntraIDAppForInteractiveLogin is not recognized` | You're on Windows PowerShell 5.1 / PnP.PowerShell 1.x. Use **Option B** (Entra portal) under Step 1, or upgrade to PowerShell 7.2+ and `Install-Module PnP.PowerShell -Force` |
 | Sign-in works but `Connect-PnPOnline` returns `AccessDenied` | Wait ~1 minute after registration for Entra propagation, then retry. If still failing, confirm admin consent was granted for `AllSites.FullControl` and `User.Read`, and verify that the signed-in account is a SharePoint Administrator |
@@ -401,8 +401,8 @@ Re-run — it skips existing titles.
 | `List 'Learning Paths' not found` | Run `Deploy-CopilotHub.ps1` before the seed script |
 | Pages show `{parameter:CompanyName}` literally | `CompanyName` is blank in `Config.psd1` |
 | Welcome page shows broken image icons | Asset upload phase (phase 9) failed. Confirm `assets/*.png` exists next to the deploy script, then re-run. `/SiteAssets/CopilotHub/` should contain the PNGs |
-| Pages or sections are missing after deploy | `Invoke-PnPSiteTemplate` (phase 5) failed silently. Re-run with `-Verbose` to see which web part caused the error. If a stock photo is missing, the template will not apply — ensure `CopilotHub.pnp` is not corrupt |
-| Edits to page content aren't showing | Pages and nav are owned by the `.pnp` template. Edit `template.xml` inside `CopilotHub.pnp` (it's a zip), re-zip, re-run Deploy |
+| Pages or sections are missing after deploy | `Invoke-PnPSiteTemplate` (phase 5) failed silently. Re-run with `-Verbose` to see which web part caused the error. If a stock photo is missing, the template will not apply — ensure `template.pnp` is not corrupt |
+| Edits to page content aren't showing | Pages and nav are owned by the `.pnp` template. Edit `template.xml` inside `template.pnp` (it's a zip), re-zip, re-run Deploy |
 | `Register-PnPHubSite` fails | Confirm `RegisterAsHub = $true` and that your account is a SharePoint Admin |
 
 ---
