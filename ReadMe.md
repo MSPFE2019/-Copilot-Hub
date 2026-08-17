@@ -5,20 +5,48 @@
 [![PnP PowerShell](https://img.shields.io/badge/PnP.PowerShell-2.x-0078D4?logo=powershell&logoColor=white)](https://pnp.github.io/powershell/)
 [![SharePoint Online](https://img.shields.io/badge/SharePoint-Online-038387?logo=microsoftsharepoint&logoColor=white)](https://learn.microsoft.com/en-us/sharepoint/)
 [![Microsoft 365](https://img.shields.io/badge/Microsoft%20365-Copilot-7719AA?logo=microsoft&logoColor=white)](https://learn.microsoft.com/en-us/copilot/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+> **Distribution note:** The repository currently distributes the implementation as `CopilotHub-v3.zip`. Clone or download the repository, extract that archive, and run the scripts from the extracted package directory. The README alone is not a deployable copy of the template.
 
 **Two design principles:**
 
-1. **Least privilege by default** — no tenant-wide `Sites.FullControl.All` grant, no certificates, no stored secrets. A one-time Entra app registration creates a **delegated-permission** app — meaning at deploy time it can only do what the signed-in user can do. You sign in interactively as a **SharePoint Administrator**, and authorization lasts only for that session.
-2. **Config-driven** — every tenant-specific value (company name, site URL, owner, app id) lives in a single `Config.psd1` file. You never edit the XML, and you never pass long parameter lists.
+1. **Interactive authentication** — deployment uses a tenant-owned, single-tenant public-client Entra app and delegated permissions. No certificates or stored secrets are required.
+2. **Config-driven** — every tenant-specific value (company name, site URL, owner, app ID) lives in a single `Config.psd1` file. You do not edit the provisioning XML for routine deployment.
 
-> **Why an Entra app at all?** As of September 2024, Microsoft retired the shared "PnP Management Shell" multi-tenant app. PnP PowerShell now requires each tenant to register its own app — even for interactive sign-in. The registration is one-time and uses **delegated** permissions only (no `Sites.FullControl.All`).
+> **Security warning:** This workflow requires the delegated SharePoint `AllSites.FullControl` permission. Although it is not an application permission and is limited by the signed-in user's access, it is still a high-privilege permission that can affect all SharePoint sites accessible to that administrator during the session. Use a dedicated administrative identity, review admin-consent policy, run the deployment from a managed workstation, and remove or disable the app registration when it is no longer needed.
+
+> **Why an Entra app at all?** As of September 2024, Microsoft retired the shared "PnP Management Shell" multi-tenant app. PnP PowerShell now requires each tenant to register its own app — even for interactive sign-in. The registration is one-time and uses delegated permissions only.
+
+---
+
+## Package contents and integrity
+
+After extracting `CopilotHub-v3.zip`, the package should contain the files described below. If a required file is missing, do not run the deployment; download the package again and verify its checksum.
+
+```text
+CopilotHub/
+├── Config.psd1
+├── Register-PnPApp.ps1
+├── Deploy-CopilotHub.ps1
+├── Seed-LearningPaths.ps1
+├── CopilotHub.pnp
+├── assets/
+└── ReadMe.md
+```
+
+Before extracting or running administrative scripts, calculate the archive hash and compare it with the SHA-256 value published with the corresponding release or deployment announcement:
+
+```powershell
+Get-FileHash .\CopilotHub-v3.zip -Algorithm SHA256
+```
+
+Only use a release or commit from the supported repository history. Do not substitute an archive copied from an untrusted location.
 
 ---
 
 ## Table of contents
 
 - [What you get](#what-you-get)
+- [Package contents and integrity](#package-contents-and-integrity)
 - [Site structure](#site-structure)
 - [Training tracks](#training-tracks)
 - [Prerequisites](#prerequisites)
@@ -42,7 +70,7 @@ CopilotHub/
 ├── Register-PnPApp.ps1         # One-time: registers an Entra app for PnP sign-in
 ├── Deploy-CopilotHub.ps1       # Hybrid deploy: site + columns + lists (native) + pages/nav/Events (template)
 ├── Seed-LearningPaths.ps1      # Reads Config.psd1, seeds 9 Microsoft Learn courses
-├── template.pnp                # PnP provisioning template — 25 rich pages, Events list, nav, 23 stock photos
+├── CopilotHub.pnp              # PnP provisioning template — 25 rich pages, Events list, nav, 23 stock photos
 ├── assets/                     # Branded PNGs uploaded to /SiteAssets/CopilotHub/ at deploy time
 │   ├── site-logo.png           #   96×96 — official M365 Copilot ribbon glyph
 │   ├── welcome-banner.png      #   1345×436 — hero on the home page
@@ -50,8 +78,10 @@ CopilotHub/
 │   ├── icon-m365-copilot.png   #   600×600 — product card
 │   ├── icon-m365-agents.png    #   600×600 — product card
 │   └── icon-copilot-studio.png #   600×600 — product card
-└── README.github.md
+└── ReadMe.md
 ```
+
+Review the sample personas, stories, metrics, and event content before publishing the site. They are example content and must not be presented as real employee or organizational information without approval.
 
 ---
 
@@ -170,7 +200,7 @@ Requires **PnP.PowerShell 2.x** on **PowerShell 7.2+**.
 | **SharePoint Administrator** (or Global Admin) | Runs the deployment interactively | Each deploy run |
 | **Site owner** | The UPN listed in `Config.psd1` as `Owner` | At site creation |
 
-You do **not** generate certificates, store secrets, or grant `Sites.FullControl.All`. The Entra app uses delegated permissions only — authorization at deploy time comes from your SharePoint Admin role in the browser sign-in, and lasts only for that session.
+You do **not** generate certificates or store secrets. The Entra app uses delegated permissions only, but `AllSites.FullControl` is high privilege: authorization at deploy time comes from your SharePoint Admin role and can affect every SharePoint site that account can access during the session.
 
 ---
 
@@ -196,6 +226,18 @@ Both `Deploy-CopilotHub.ps1` and `Seed-LearningPaths.ps1` read from this file. T
 ---
 
 ## Deploy
+
+### Step 0 — Extract and preflight the package
+
+Run the following from the directory containing `CopilotHub-v3.zip`:
+
+```powershell
+Expand-Archive .\CopilotHub-v3.zip -DestinationPath .\CopilotHub -Force
+Set-Location .\CopilotHub
+Get-ChildItem .\Config.psd1, .\Register-PnPApp.ps1, .\Deploy-CopilotHub.ps1, .\Seed-LearningPaths.ps1, .\CopilotHub.pnp
+```
+
+The final command must list every required file. Stop and obtain a complete, trusted package if any file is missing.
 
 ### Step 1 — One-time: register the Entra app
 
@@ -227,7 +269,7 @@ A browser opens. Sign in as a Global Administrator. The script calls `Register-P
    - Click **Grant admin consent for *(tenant)***.
 5. **Authentication → Advanced settings → "Allow public client flows"** → **Yes** → Save.
 
-> These are the **minimum** permissions PnP needs for this workflow. Both are **delegated**, meaning the app inherits the signed-in user's scope. There is no `Sites.FullControl.All` *application* permission and no tenant-wide grant.
+> These are the permissions required by this workflow. They are **delegated**, meaning the app inherits the signed-in user's scope. There is no `Sites.FullControl.All` *application* permission, but delegated `AllSites.FullControl` remains high privilege and requires careful admin-consent review.
 >
 > **Why not Graph `Sites.FullControl.All`?** PnP PowerShell uses SharePoint REST endpoints (not Microsoft Graph) for site creation, template apply, and hub registration in this workflow. The SharePoint `AllSites.FullControl` delegated permission is sufficient on its own. Graph `User.Read` is included only so Entra can resolve the signed-in user's identity during the interactive sign-in flow.
 
@@ -347,10 +389,10 @@ Re-run — it skips existing titles.
 | --- | --- |
 | `PnP.PowerShell is not installed` | `Install-Module PnP.PowerShell -Scope CurrentUser` |
 | `Config.psd1 is missing required value: X` | Open `Config.psd1` and fill in the missing value |
-| `template.pnp not found` | Ensure `template.pnp` is in the same folder as `Deploy-CopilotHub.ps1`
+| `CopilotHub.pnp not found` | Extract the complete package and ensure `CopilotHub.pnp` is in the same folder as `Deploy-CopilotHub.ps1` |
 | `AADSTS700016: Application with identifier ... was not found` | You haven't done the one-time app registration yet, or `ClientId` in `Config.psd1` is wrong / from a different tenant |
 | `Register-PnPEntraIDAppForInteractiveLogin is not recognized` | You're on Windows PowerShell 5.1 / PnP.PowerShell 1.x. Use **Option B** (Entra portal) under Step 1, or upgrade to PowerShell 7.2+ and `Install-Module PnP.PowerShell -Force` |
-| Sign-in works but `Connect-PnPOnline` returns `AccessDenied` | Wait ~1 minute after registration for Entra propagation, then retry. If still failing, confirm admin consent was granted on all 3 delegated permissions |
+| Sign-in works but `Connect-PnPOnline` returns `AccessDenied` | Wait ~1 minute after registration for Entra propagation, then retry. If still failing, confirm admin consent was granted for `AllSites.FullControl` and `User.Read`, and verify that the signed-in account is a SharePoint Administrator |
 | `AADSTS65001: The user or administrator has not consented to use the application` | Open the app in Entra portal → API permissions → click **Grant admin consent for *(tenant)*** |
 | Browser prompt loops on sign-in | Make sure your account holds the **SharePoint Administrator** role |
 | `Get-PnPTenantSite` returns 403 | You're not signed in as a SharePoint Admin — re-run and sign in with the correct account |
@@ -369,7 +411,7 @@ Re-run — it skips existing titles.
 
 - [ ] Power Automate flow: auto-assign required training when a Copilot license is requested
 - [ ] Power BI report on training completion rates
-- [ ] Sample declarative agent definition + Copilot Studio solution under `/samples`
+- [ ] Sample declarative agent definition + Copilot Studio solution (planned; not included in the current package)
 - [ ] Localized content packs (es-ES, fr-FR, de-DE)
 
 ---
@@ -385,4 +427,4 @@ Re-run — it skips existing titles.
 
 ## License
 
-[MIT](LICENSE) — provided as-is. Microsoft, M365 Copilot, Copilot Studio, and SharePoint are trademarks of the Microsoft group of companies.
+No `LICENSE` file is currently included in this repository. Until a license is added, treat the contents as all rights reserved and obtain permission before redistributing or modifying the package. Microsoft, Microsoft 365 Copilot, Copilot Studio, and SharePoint are trademarks of the Microsoft group of companies.
