@@ -59,6 +59,7 @@ The root `CopilotHub-v3.zip` currently hashes to `6765CE62A8B264148DBA8F7A5267A7
 - [Package contents and integrity](#package-contents-and-integrity)
 - [Site structure](#site-structure)
 - [Training tracks](#training-tracks)
+- [Localization](#localization)
 - [Prerequisites](#prerequisites)
 - [Configure](#configure)
 - [Deploy](#deploy)
@@ -82,7 +83,13 @@ CopilotHub/
 ├── Register-PnPApp.ps1         # One-time: registers an Entra app for PnP sign-in
 ├── Deploy-CopilotHub.ps1       # Hybrid deploy: site + columns + lists (native) + pages/nav/Events (template)
 ├── Seed-LearningPaths.ps1      # Reads Config.psd1, seeds 10 learning resources
+├── Apply-Localization.ps1      # Optional: renames nav/pages/columns/lists to a localized pack
 ├── template.pnp               # PnP provisioning template — 26 rich pages, Events list, nav, 23 stock photos
+├── localization/                # Optional es-ES / fr-FR / de-DE content packs (see Localization)
+│   ├── README.md
+│   ├── es-ES/content.json
+│   ├── fr-FR/content.json
+│   └── de-DE/content.json
 ├── assets/                     # Branded PNGs uploaded to /SiteAssets/CopilotHub/ at deploy time
 │   ├── site-logo.png           #   96×96 — official M365 Copilot ribbon glyph
 │   ├── welcome-banner.png      #   1345×436 — hero on the home page
@@ -201,6 +208,36 @@ The **Guided Learning** page hosts four role-based tracks. Every URL is a verifi
 - [Microsoft 365 Copilot product overview](https://www.microsoft.com/en-us/microsoft-365/copilot)
 - [GitHub Copilot product overview](https://github.com/features/copilot)
 - [GitHub Copilot documentation](https://docs.github.com/en/copilot)
+
+---
+
+## Localization
+
+The site deploys in English by default. Optional, maintainable localization content packs are
+available for **Spanish (`es-ES`)**, **French (`fr-FR`)**, and **German (`de-DE`)** under
+`localization/`. Each pack is a small, reviewable JSON file — not a forked copy of `template.pnp`
+— that maps English navigation labels, page titles, site-column display names, and list titles to
+original, plain-language translations of this project's own authored copy. No text is copied from
+Microsoft or GitHub marketing pages.
+
+Apply a pack after deployment, either inline:
+
+```powershell
+.\Deploy-CopilotHub.ps1 -Locale fr-FR
+```
+
+or separately against an already-deployed site:
+
+```powershell
+.\Apply-Localization.ps1 -Locale es-ES
+```
+
+The English base template and its labels are always provisioned first; localization only renames
+existing objects and never deletes or recreates content. It is idempotent and reports any pack key
+that has no matching site object. See `localization/README.md` for the full content-pack format
+and known limitations (for example, sample list-item data and full page bodies beyond the Home,
+Getting Started, and GitHub Copilot pages are not translated — replace that example content with
+your organization's own regardless of language).
 
 ---
 
@@ -330,6 +367,7 @@ The script is fully idempotent. Re-run it to push template changes; existing lis
 | 8 | Views | cmdlet | Creates `By Audience`, `By Product`, `Required Only` views on Learning Paths |
 | 9 | Branded assets | cmdlet | Uploads `assets/*.png` to `/SiteAssets/CopilotHub/` and sets the site logo |
 | 10 | Seed `Learning Paths` | script | Adds 10 official learning resources (idempotent on Title) |
+| 11 | Localization (optional) | script | Only runs if `-Locale` is supplied; renames navigation, pages, site columns, and lists to the matching pack in `localization/` |
 
 Every phase is idempotent. Safe to re-run — existing columns, lists, pages, and list items are skipped. Template data rows use overwrite behavior, so review sample Events before rerunning in production.
 
