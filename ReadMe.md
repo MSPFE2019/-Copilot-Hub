@@ -1,8 +1,8 @@
 # Copilot Hub — SharePoint Site Template
 
-> A drop-in SharePoint communication-site template for organizations rolling out **Microsoft 365 Copilot**, **Copilot Chat**, **Microsoft 365 Agents**, and **Microsoft Copilot Studio agents** — modeled after the [Power Platform adoption hub template](https://learn.microsoft.com/en-us/power-platform/guidance/adoption/sharepoint-site-template) and adapted for the Copilot product family.
+> A drop-in SharePoint communication-site template for organizations rolling out **Microsoft 365 Copilot**, **Copilot Chat**, **Microsoft 365 Agents**, **Microsoft Copilot Studio**, and **GitHub Copilot** — modeled after the [Power Platform adoption hub template](https://learn.microsoft.com/en-us/power-platform/guidance/adoption/sharepoint-site-template) and adapted for the Copilot product family.
 
-[![PnP PowerShell](https://img.shields.io/badge/PnP.PowerShell-2.x-0078D4?logo=powershell&logoColor=white)](https://pnp.github.io/powershell/)
+[![PnP PowerShell](https://img.shields.io/badge/PnP.PowerShell-1.12.x-0078D4?logo=powershell&logoColor=white)](https://pnp.github.io/powershell/)
 [![SharePoint Online](https://img.shields.io/badge/SharePoint-Online-038387?logo=microsoftsharepoint&logoColor=white)](https://learn.microsoft.com/en-us/sharepoint/)
 [![Microsoft 365](https://img.shields.io/badge/Microsoft%20365-Copilot-7719AA?logo=microsoft&logoColor=white)](https://learn.microsoft.com/en-us/copilot/)
 > **Distribution note:** The supported release artifact is `release/CopilotHub-v4.zip`. The root `CopilotHub-v3.zip` is a separate, inconsistently named local artifact whose embedded `VERSION.txt` says `4.0.0`; do not treat its filename as a v3 release or substitute it for the v4 release. Extract the supported release archive and run the scripts from the extracted package directory. The README alone is not a deployable copy of the template.
@@ -74,13 +74,15 @@ The root `CopilotHub-v3.zip` currently hashes to `6765CE62A8B264148DBA8F7A5267A7
 
 ## What you get
 
+The content is original plain-language guidance. Product facts link to the official [Microsoft 365 Copilot](https://www.microsoft.com/en-us/microsoft-365/copilot) and [GitHub Copilot](https://github.com/features/copilot) pages rather than reproducing marketing copy. The template uses the supplied Microsoft 365 Copilot mark and a brand-safe palette (`#7719AA` Microsoft 365 Copilot purple, `#24292F` GitHub neutral); no third-party assets are fetched during deployment.
+
 ```
 CopilotHub/
 ├── Config.psd1                 # ← edit this once
 ├── Register-PnPApp.ps1         # One-time: registers an Entra app for PnP sign-in
 ├── Deploy-CopilotHub.ps1       # Hybrid deploy: site + columns + lists (native) + pages/nav/Events (template)
-├── Seed-LearningPaths.ps1      # Reads Config.psd1, seeds 9 Microsoft Learn courses
-├── template.pnp               # PnP provisioning template — 25 rich pages, Events list, nav, 23 stock photos
+├── Seed-LearningPaths.ps1      # Reads Config.psd1, seeds 10 learning resources
+├── template.pnp               # PnP provisioning template — 26 rich pages, Events list, nav, 23 stock photos
 ├── assets/                     # Branded PNGs uploaded to /SiteAssets/CopilotHub/ at deploy time
 │   ├── site-logo.png           #   96×96 — official M365 Copilot ribbon glyph
 │   ├── welcome-banner.png      #   1345×436 — hero on the home page
@@ -108,7 +110,8 @@ Home
 │   ├── Copilot Chat
 │   ├── Microsoft 365 Copilot
 │   ├── Microsoft 365 Agents
-│   └── Copilot Studio Agents
+│   ├── Copilot Studio Agents
+│   └── GitHub Copilot
 ├── Governance
 │   ├── Responsible AI & Acceptable Use
 │   ├── Data Security & Sensitivity Labels
@@ -185,10 +188,19 @@ The **Guided Learning** page hosts four role-based tracks. Every URL is a verifi
 | [Implement Microsoft 365 Copilot](https://learn.microsoft.com/en-us/training/modules/implement-microsoft-365-copilot/) | 51 min · 10 units | Intermediate |
 | [MS-4017: Manage and extend Microsoft 365 Copilot](https://learn.microsoft.com/en-us/training/courses/ms-4017) | 1 day (ILT) | Intermediate |
 
-### Track 4 — Always-on hub
+### Track 4 — GitHub Copilot
+
+| Resource | Length | Level |
+| --- | --- | --- |
+| [GitHub Copilot documentation](https://docs.github.com/en/copilot) | Docs | Beginner |
+
+### Track 5 — Always-on hub
 
 - [Microsoft Copilot learning hub](https://learn.microsoft.com/en-us/copilot/)
 - [Microsoft 365 Copilot adoption resources](https://learn.microsoft.com/en-us/microsoft-365/copilot/microsoft-365-copilot-enablement-resources)
+- [Microsoft 365 Copilot product overview](https://www.microsoft.com/en-us/microsoft-365/copilot)
+- [GitHub Copilot product overview](https://github.com/features/copilot)
+- [GitHub Copilot documentation](https://docs.github.com/en/copilot)
 
 ---
 
@@ -200,7 +212,7 @@ The **Guided Learning** page hosts four role-based tracks. Every URL is a verifi
 Install-Module PnP.PowerShell -Scope CurrentUser
 ```
 
-Requires **PnP.PowerShell 2.x** on **PowerShell 7.2+**.
+Requires **PnP.PowerShell 1.12.x** on **PowerShell 7.2+**. This is pinned for the bundled PnP.Framework 1.10.2 template.
 
 ### People
 
@@ -297,7 +309,7 @@ Paste the `ClientId` into `Config.psd1` → `ClientId`. Wait ~1 minute for Entra
 
 A browser window opens. **Sign in as a SharePoint Administrator** (or Global Admin). Your role authorizes the deployment for the duration of the session — nothing is granted permanently.
 
-The script is fully idempotent. Re-run it any time to push template changes; existing list data is preserved.
+The script is fully idempotent. Re-run it to push template changes; existing list data and site owners are preserved. It never permanently removes a deleted or errored site automatically. After explicit administrator approval, use `.\Deploy-CopilotHub.ps1 -PurgeConflictingSite`.
 
 ---
 
@@ -312,14 +324,14 @@ The script is fully idempotent. Re-run it any time to push template changes; exi
 | 2b | Register as hub site | cmdlet | Only if `RegisterAsHub = $true` (runs in admin context so no extra login) |
 | 3 | Ensure site exists | cmdlet | Creates the communication site if missing |
 | 4 | Connect to site | cmdlet | Reconnects to the new site URL |
-| 5 | Apply PnP template | `Invoke-PnPSiteTemplate` | Provisions 25 rich pages (News carousel, Events, QuickLinks, People, hero layouts), the Events list with its calendar view, and top navigation — from `template.pnp` |
+| 5 | Apply PnP template | `Invoke-PnPSiteTemplate` | Provisions 26 rich pages (including GitHub Copilot guidance), Events, QuickLinks, and top navigation — from `template.pnp` |
 | 6 | Site columns | cmdlet | Creates 9 Copilot Hub site columns via `Add-PnPField` |
 | 7 | Lists | cmdlet | Creates 4 lists (Learning Paths, Agent Catalog, Approved Connectors, Prompt Library) via `New-PnPList` and wires field refs — Events list is handled by phase 5 |
 | 8 | Views | cmdlet | Creates `By Audience`, `By Product`, `Required Only` views on Learning Paths |
 | 9 | Branded assets | cmdlet | Uploads `assets/*.png` to `/SiteAssets/CopilotHub/` and sets the site logo |
-| 10 | Seed `Learning Paths` | script | Adds 9 Microsoft Learn courses (idempotent on Title) |
+| 10 | Seed `Learning Paths` | script | Adds 10 official learning resources (idempotent on Title) |
 
-Every phase is idempotent. Safe to re-run — existing columns, lists, pages, and list items are skipped.
+Every phase is idempotent. Safe to re-run — existing columns, lists, pages, and list items are skipped. Template data rows use overwrite behavior, so review sample Events before rerunning in production.
 
 > **Why the hybrid approach?** `Invoke-PnPSiteTemplate` gives rich web parts (News carousel, Events, QuickLinks, People) that are impossible to reproduce cleanly via cmdlets alone — and the `.pnp` template carries 23 stock photos and the full navigation tree. Native cmdlets handle Copilot-specific lists and columns because they give a real error per step (template engine only reports "Template is not valid" with no detail when any element fails).
 
