@@ -5,7 +5,7 @@
 [![PnP PowerShell](https://img.shields.io/badge/PnP.PowerShell-1.12.x-0078D4?logo=powershell&logoColor=white)](https://pnp.github.io/powershell/)
 [![SharePoint Online](https://img.shields.io/badge/SharePoint-Online-038387?logo=microsoftsharepoint&logoColor=white)](https://learn.microsoft.com/en-us/sharepoint/)
 [![Microsoft 365](https://img.shields.io/badge/Microsoft%20365-Copilot-7719AA?logo=microsoft&logoColor=white)](https://learn.microsoft.com/en-us/copilot/)
-> **Distribution note:** The supported release artifact is `release/CopilotHub-v4.zip`. The root `CopilotHub-v3.zip` is a separate, inconsistently named local artifact whose embedded `VERSION.txt` says `4.0.0`; do not treat its filename as a v3 release or substitute it for the v4 release. Extract the supported release archive and run the scripts from the extracted package directory. The README alone is not a deployable copy of the template.
+> **Distribution note:** The supported release artifact is `release/CopilotHub-v5.zip`. Extract the supported release archive and run the scripts from the extracted package directory. The README alone is not a deployable copy of the template.
 
 **Two design principles:**
 
@@ -16,13 +16,13 @@
 
 > **Why an Entra app at all?** As of September 2024, Microsoft retired the shared "PnP Management Shell" multi-tenant app. PnP PowerShell now requires each tenant to register its own app — even for interactive sign-in. The registration is one-time and uses delegated permissions only.
 
-> **Release 4.0.0 hardening:** The provisioning package contains no notification webhook. Designer access, declarative workflow creation, and member sharing are disabled by default; enable them only after tenant governance review. Review all sample pages and events before publishing.
+> **Release 5.0.0 — community/adoption hub rebuild:** The page layout was reworked around the [Power Platform community/adoption hub guidance](https://learn.microsoft.com/en-us/power-platform/guidance/adoption/wiki-community). Four orphaned, Lorem-ipsum sample-content pages that weren't reachable from navigation (`Adele-Vance`, `James-Williams`, `Finance-Copilot-Studio-Build`, `Research-and-Innovation-hackathon`) were removed. The repeated Beginner/Intermediate/Advanced training-links footer that previously appeared at the bottom of every single page was removed everywhere except the dedicated **Guided Learning** page, so training now lives only where the navigation already points to it. A packaging bug that placed `GitHub-Copilot.aspx` outside `<ClientSidePages>` (so it silently failed to provision) is also fixed. Designer access, declarative workflow creation, and member sharing are disabled by default; enable them only after tenant governance review. Review all sample pages and events before publishing.
 
 ---
 
 ## Package contents and integrity
 
-After extracting the supported `release/CopilotHub-v4.zip`, the package should contain the files described below. If a required file is missing, do not run the deployment; download the package again and verify its checksum.
+After extracting the supported `release/CopilotHub-v5.zip`, the package should contain the files described below. If a required file is missing, do not run the deployment; download the package again and verify its checksum.
 
 ```text
 CopilotHub/
@@ -38,18 +38,16 @@ CopilotHub/
 Before extracting or running administrative scripts, calculate the archive hash and compare it with the SHA-256 value published with the corresponding release or deployment announcement:
 
 ```powershell
-Get-FileHash .\CopilotHub-v4.zip -Algorithm SHA256
+Get-FileHash .\CopilotHub-v5.zip -Algorithm SHA256
 ```
 
-For the supported `release/CopilotHub-v4.zip` artifact (`v4.0.0`), the verified SHA-256 value is:
+For the supported `release/CopilotHub-v5.zip` artifact (`v5.0.0`), the verified SHA-256 value is:
 
 ```text
-A86EDA7FBC51A3D7A54F1EAFDC299552636922474520197DB5B309EA918A35DE
+ABC168F398CE4DEB0851DD931636B55D92528BA0BD1498B1D8DFF25C8E0CB5D5
 ```
 
 Only use a release or commit from the supported repository history. Do not substitute an archive copied from an untrusted location.
-
-The root `CopilotHub-v3.zip` currently hashes to `6765CE62A8B264148DBA8F7A5267A7280804E4BE1C4B61A20017ED066358AD8D` while carrying `VERSION.txt` value `4.0.0`. Because that artifact is mislabeled/inconsistent, do not use it as the v4 release.
 
 ---
 
@@ -84,7 +82,7 @@ CopilotHub/
 ├── Deploy-CopilotHub.ps1       # Hybrid deploy: site + columns + lists (native) + pages/nav/Events (template)
 ├── Seed-LearningPaths.ps1      # Reads Config.psd1, seeds 10 learning resources
 ├── Apply-Localization.ps1      # Optional: renames nav/pages/columns/lists to a localized pack
-├── template.pnp               # PnP provisioning template — 26 rich pages, Events list, nav, 23 stock photos
+├── template.pnp               # PnP provisioning template — 22 rich pages, Events list, nav, 23 stock photos
 ├── localization/                # Optional es-ES / fr-FR / de-DE content packs (see Localization)
 │   ├── README.md
 │   ├── es-ES/content.json
@@ -133,9 +131,9 @@ Home
 │   ├── Consultation
 │   └── Internal Communities
 ├── Community
-│   ├── Champion of the Week   (+ Adele Vance, James Williams seeded)
-│   ├── Success Stories        (+ Finance Copilot Studio Build seeded)
-│   ├── Hackathons             (+ Research & Innovation hackathon seeded)
+│   ├── Champion of the Week
+│   ├── Success Stories
+│   ├── Hackathons
 │   └── News & Announcements
 ├── Copilot at {CompanyName}
 ├── Get a License
@@ -169,7 +167,7 @@ Hidden under `/SitePages/Templates/`. Use as starting points when posting commun
 
 ## Training tracks
 
-The **Guided Learning** page hosts four role-based tracks. Every URL is a verified Microsoft Learn resource.
+The **Guided Learning** page hosts four role-based tracks. Every URL is a verified Microsoft Learn resource. Since v5.0.0, this Beginner/Intermediate/Advanced training-links card grid appears **only** on Guided Learning — it is no longer repeated at the bottom of every other page in the site, so community and adoption content stays focused per page while training remains one click away via **Learn → Guided Learning**.
 
 ### Track 1 — End users
 
@@ -288,10 +286,10 @@ Both `Deploy-CopilotHub.ps1` and `Seed-LearningPaths.ps1` read from this file. T
 
 ### Step 0 — Extract and preflight the package
 
-Run the following from the directory containing `CopilotHub-v3.zip`:
+Run the following from the directory containing `CopilotHub-v5.zip`:
 
 ```powershell
-Expand-Archive .\CopilotHub-v3.zip -DestinationPath .\CopilotHub -Force
+Expand-Archive .\CopilotHub-v5.zip -DestinationPath .\CopilotHub -Force
 Set-Location .\CopilotHub
 Get-ChildItem .\Config.psd1, .\Register-PnPApp.ps1, .\Deploy-CopilotHub.ps1, .\Seed-LearningPaths.ps1, .\template.pnp
 ```
@@ -361,7 +359,7 @@ The script is fully idempotent. Re-run it to push template changes; existing lis
 | 2b | Register as hub site | cmdlet | Only if `RegisterAsHub = $true` (runs in admin context so no extra login) |
 | 3 | Ensure site exists | cmdlet | Creates the communication site if missing |
 | 4 | Connect to site | cmdlet | Reconnects to the new site URL |
-| 5 | Apply PnP template | `Invoke-PnPSiteTemplate` | Provisions 26 rich pages (including GitHub Copilot guidance), Events, QuickLinks, and top navigation — from `template.pnp` |
+| 5 | Apply PnP template | `Invoke-PnPSiteTemplate` | Provisions 22 rich pages (including GitHub Copilot guidance), Events, QuickLinks, and top navigation — from `template.pnp` |
 | 6 | Site columns | cmdlet | Creates 9 Copilot Hub site columns via `Add-PnPField` |
 | 7 | Lists | cmdlet | Creates 4 lists (Learning Paths, Agent Catalog, Approved Connectors, Prompt Library) via `New-PnPList` and wires field refs — Events list is handled by phase 5 |
 | 8 | Views | cmdlet | Creates `By Audience`, `By Product`, `Required Only` views on Learning Paths |
@@ -472,7 +470,6 @@ Re-run — it skips existing titles.
 - [ ] Power Automate flow: auto-assign required training when a Copilot license is requested
 - [ ] Power BI report on training completion rates
 - [ ] Sample declarative agent definition + Copilot Studio solution (planned; not included in the current package)
-- [ ] Localized content packs (es-ES, fr-FR, de-DE)
 
 ---
 
@@ -481,6 +478,7 @@ Re-run — it skips existing titles.
 - [PnP PowerShell docs](https://pnp.github.io/powershell/)
 - [PnP provisioning schema](https://github.com/pnp/PnP-Provisioning-Schema)
 - [Power Platform site template (origin model)](https://learn.microsoft.com/en-us/power-platform/guidance/adoption/sharepoint-site-template)
+- [Power Platform community/adoption hub guidance (v5.0.0 layout reference)](https://learn.microsoft.com/en-us/power-platform/guidance/adoption/wiki-community)
 - [Microsoft Copilot learning hub](https://learn.microsoft.com/en-us/copilot/)
 
 ---
